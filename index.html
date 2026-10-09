@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Timetable Master — Wellspring University</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wellspring: {
+              navy: '#0B1F3A',
+              navyDark: '#071527',
+              gold: '#CFA144',
+              goldLight: '#FAEAC4',
+              surface: '#F8FAFC'
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+<body class="bg-slate-100 min-h-screen flex flex-col text-slate-800 pb-8 antialiased">
+
+  <!-- ================= PASSCODE LOCK OVERLAY ================= -->
+  <div id="passcode-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4 transition-all">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-8 max-w-sm w-full text-center">
+      <div class="w-14 h-14 rounded-2xl bg-wellspring-navy text-wellspring-gold flex items-center justify-center mx-auto mb-3 shadow-md border border-amber-400/20">
+        <i data-lucide="lock" class="w-7 h-7"></i>
+      </div>
+      <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">Wellspring University</h2>
+      <p class="text-[11px] uppercase tracking-widest text-amber-600 font-bold mt-0.5">Timetable Master</p>
+      <p class="text-xs text-slate-500 mt-2 mb-5">Enter your local officer passcode to access the workspace.</p>
+
+      <div class="space-y-3">
+        <input 
+          type="password" 
+          id="passcode-input" 
+          placeholder="Passcode..." 
+          class="w-full px-4 py-3 text-center text-xl font-mono tracking-widest rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-wellspring-navy focus:border-transparent transition-all"
+          maxlength="20"
+        >
+        <p id="passcode-error" class="hidden text-xs text-rose-600 font-semibold flex items-center justify-center gap-1">
+          <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Incorrect passcode.
+        </p>
+        <button 
+          id="passcode-btn" 
+          class="w-full py-3 bg-wellspring-navy hover:bg-slate-900 text-amber-300 font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
+        >
+          <span>Unlock Workstation</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="mt-5 pt-3 border-t border-slate-100 text-[11px] text-slate-400">
+        Default Passcode: <strong class="text-slate-600 font-mono">1234</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PRINT-ONLY UNIVERSITY HEADER ================= -->
+  <div class="hidden print-header p-4 border-b-2 border-slate-900 text-center">
+    <div class="text-2xl font-black uppercase tracking-wider text-slate-900 meta-institution-label">WELLSPRING UNIVERSITY</div>
+    <div class="text-xs uppercase font-bold tracking-widest text-slate-600">DIRECTORATE OF ACADEMIC PLANNING & TIMETABLE COMMITTEE</div>
+    <div class="text-sm font-bold text-slate-800 mt-1" id="print-timetable-subtitle">Master Lecture Timetable</div>
+    <div class="text-xs text-slate-500 mt-0.5">
+      <span class="meta-session-label">2025/2026 Academic Session</span> • <span class="meta-semester-label">First Semester</span> • Official Schedule
+    </div>
+  </div>
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <nav class="glass-nav text-white sticky top-0 z-40 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Brand & Header Actions: Ultra-clean on mobile -->
+      <div class="flex items-center justify-between h-14 sm:h-16">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-wellspring-gold text-wellspring-navyDark flex items-center justify-center font-black text-base sm:text-lg shadow-sm flex-shrink-0">
+            W
+          </div>
+          <div class="min-w-0 flex flex-col justify-center">
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-sm sm:text-base tracking-tight text-white whitespace-nowrap">
+                Timetable Master
+              </span>
+              <span class="hidden sm:inline-flex text-[9px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded font-bold border border-amber-400/30">
+                Wellspring
+              </span>
+            </div>
+            <div class="text-[10px] sm:text-[11px] text-slate-300/80 whitespace-nowrap truncate">
+              <span class="meta-inst-title">Wellspring University</span> • <span class="meta-session-label">2025/2026</span> • <span id="meta-mode-badge" class="font-bold text-amber-300">Lectures</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mode Switcher (Desktop) -->
+        <div class="hidden sm:inline-flex p-1 bg-slate-900/80 backdrop-blur rounded-xl border border-white/10 text-xs font-bold shadow-inner">
+          <button class="mode-switcher-btn active px-3.5 py-1.5 rounded-lg flex items-center gap-1.5" data-mode="lecture">
+            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+            <span>Lecture Mode</span>
+          </button>
+          <button class="mode-switcher-btn px-3.5 py-1.5 rounded-lg flex items-center gap-1.5" data-mode="exam">
+            <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i>
+            <span>Exam Mode</span>
+          </button>
+        </div>
+
+        <!-- Header Actions -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <div id="cloud-status-badge" class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold shadow-sm" title="Connected to Google Cloud Firestore">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="cloud-status-label">Cloud Sync</span>
+          </div>
+          <a href="student.html" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-amber-300 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 border border-white/10" title="Open Student Companion View">
+            <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+            <span class="hidden md:inline">Student View</span>
+          </a>
+          <button id="btn-run-engine" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-lg text-xs shadow-md transition-all active:scale-95">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span id="btn-run-engine-text">Generate</span>
+          </button>
+          <button id="btn-lock-app" class="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 active:scale-95 transition-all" title="Lock Workstation">
+            <i data-lucide="lock" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Mobile Mode Switcher Row (Ultra-clean segmented control) -->
+      <div class="sm:hidden pb-2.5">
+        <div class="grid grid-cols-2 p-1 bg-slate-900/80 backdrop-blur-md rounded-xl border border-white/10 text-xs font-bold text-center shadow-inner">
+          <button class="mode-switcher-btn active py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5" data-mode="lecture">
+            <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+            <span>Lectures</span>
+          </button>
+          <button class="mode-switcher-btn py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5" data-mode="exam">
+            <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i>
+            <span>Exams</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Horizontal Scrollable Navigation Tabs (Mobile & Desktop) -->
+      <div class="flex items-center space-x-1 overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sm:mx-0 sm:px-0 border-t border-white/10 text-xs">
+        <button data-tab-target="dashboard" class="nav-pill active px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white flex-shrink-0">
+          <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Dashboard
+        </button>
+        <button data-tab-target="timetable" class="nav-pill px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white flex-shrink-0">
+          <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Timetable
+        </button>
+        <button data-tab-target="courses" class="nav-pill px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white flex-shrink-0">
+          <i data-lucide="book-open" class="w-3.5 h-3.5"></i> Courses
+        </button>
+        <button data-tab-target="venues" class="nav-pill px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white flex-shrink-0">
+          <i data-lucide="building" class="w-3.5 h-3.5"></i> Venues
+        </button>
+        <button data-tab-target="levels" class="nav-pill px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white flex-shrink-0">
+          <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i> Levels
+        </button>
+        <button data-tab-target="lecturers" class="nav-pill px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white flex-shrink-0">
+          <i data-lucide="users" class="w-3.5 h-3.5"></i> Lecturers
+        </button>
+        <button data-tab-target="rules" class="nav-pill px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white flex-shrink-0">
+          <i data-lucide="sliders" class="w-3.5 h-3.5"></i> Rules
+        </button>
+        <button data-tab-target="settings" class="nav-pill px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold text-slate-300 hover:text-white flex-shrink-0">
+          <i data-lucide="settings" class="w-3.5 h-3.5"></i> Settings
+        </button>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+
+    <!-- ================= TAB 1: DASHBOARD ================= -->
+    <section id="tab-dashboard" class="tab-pane space-y-4 sm:space-y-5">
+      
+      <!-- Minimal Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+        <div>
+          <h2 id="dash-title" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Overview</h2>
+          <p id="dash-subtitle" class="text-xs text-slate-500 mt-0.5">Academic scheduling status and entity summary.</p>
+        </div>
+        
+        <div class="flex items-center gap-2 self-start sm:self-auto">
+          <!-- Status Pill -->
+          <div id="timetable-status-pill" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-200/80 text-slate-700 text-xs font-semibold">
+            <span id="status-indicator-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span id="timetable-status-text">Setup required</span>
+          </div>
+
+          <!-- Primary Generate Button -->
+          <button id="btn-run-engine-dash" class="px-4 py-2 bg-wellspring-navy hover:bg-slate-900 text-amber-300 font-bold text-xs rounded-xl shadow-sm flex items-center gap-1.5 active:scale-95 transition-all">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span id="btn-run-engine-dash-text">Generate</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Exam Mode Notice Banner (Visible when Exam Mode is active) -->
+      <div id="exam-mode-banner" class="hidden p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2.5 text-amber-950">
+          <span class="w-8 h-8 rounded-xl bg-wellspring-gold text-wellspring-navyDark font-black flex items-center justify-center flex-shrink-0">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+          </span>
+          <div>
+            <span class="font-extrabold text-slate-900 block text-xs sm:text-sm">Exam Timetable Engine Active</span>
+            <span class="text-[11px] text-slate-600">50% Desk Spacing (Anti-Malpractice) • Max 1 Exam/Day per Level • Invigilator Rotations</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 self-end sm:self-auto">
+          <button id="btn-quick-config-exams" class="px-3 py-1.5 bg-white border border-amber-300 text-amber-900 font-bold rounded-lg text-xs hover:bg-amber-50 transition-colors shadow-sm">
+            Exam Rules
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 Clean Entity Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        
+        <!-- Venues Card -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between gap-3">
+          <div class="flex items-center justify-between">
+            <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+              <i data-lucide="building" class="w-4 h-4"></i>
+            </div>
+            <span id="check-icon-venues" class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-[10px] font-bold">0</span>
+          </div>
+          <div>
+            <div id="stat-total-venues" class="text-2xl font-extrabold text-slate-900">0</div>
+            <div id="stat-venues-label" class="text-xs font-bold text-slate-700 mt-0.5">Lecture Halls</div>
+            <div id="check-status-venues" class="text-[11px] text-slate-400 mt-0.5">0 added</div>
+          </div>
+          <button class="btn-quick-add-venue w-full py-1.5 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-1">
+            <i data-lucide="plus" class="w-3 h-3"></i> Add Hall
+          </button>
+        </div>
+
+        <!-- Levels Card -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between gap-3">
+          <div class="flex items-center justify-between">
+            <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+            </div>
+            <span id="check-icon-levels" class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-[10px] font-bold">0</span>
+          </div>
+          <div>
+            <div id="stat-total-levels" class="text-2xl font-extrabold text-slate-900">0</div>
+            <div id="stat-levels-label" class="text-xs font-bold text-slate-700 mt-0.5">Student Levels</div>
+            <div id="check-status-levels" class="text-[11px] text-slate-400 mt-0.5">0 added</div>
+          </div>
+          <button class="btn-quick-add-level w-full py-1.5 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-1">
+            <i data-lucide="plus" class="w-3 h-3"></i> Add Level
+          </button>
+        </div>
+
+        <!-- Lecturers Card -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between gap-3">
+          <div class="flex items-center justify-between">
+            <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <i data-lucide="users" class="w-4 h-4"></i>
+            </div>
+            <span id="check-icon-lecturers" class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-[10px] font-bold">0</span>
+          </div>
+          <div>
+            <div id="stat-total-lecturers" class="text-2xl font-extrabold text-slate-900">0</div>
+            <div id="stat-lecturers-label" class="text-xs font-bold text-slate-700 mt-0.5">Lecturers</div>
+            <div id="check-status-lecturers" class="text-[11px] text-slate-400 mt-0.5">0 added</div>
+          </div>
+          <button class="btn-quick-add-lecturer w-full py-1.5 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-1">
+            <i data-lucide="plus" class="w-3 h-3"></i> Add Lecturer
+          </button>
+        </div>
+
+        <!-- Courses Card -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between gap-3">
+          <div class="flex items-center justify-between">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <i data-lucide="book-open" class="w-4 h-4"></i>
+            </div>
+            <span id="check-icon-courses" class="w-5 h-5 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-[10px] font-bold">0</span>
+          </div>
+          <div>
+            <div id="stat-total-courses" class="text-2xl font-extrabold text-slate-900">0</div>
+            <div id="stat-courses-label" class="text-xs font-bold text-slate-700 mt-0.5">Courses</div>
+            <div id="check-status-courses" class="text-[11px] text-slate-400 mt-0.5">0 added</div>
+          </div>
+          <button class="btn-quick-add-course w-full py-1.5 px-3 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-xs transition-colors flex items-center justify-center gap-1">
+            <i data-lucide="plus" class="w-3 h-3"></i> Add Course
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Generated Timetable Active Banner (Visible when timetable exists) -->
+      <div id="dashboard-metrics-container" class="hidden bg-white p-5 rounded-2xl border border-emerald-200 shadow-sm space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div id="dashboard-metrics-title" class="font-extrabold text-slate-900 text-sm">Clash-Free Timetable Generated</div>
+              <div id="dashboard-metrics-desc" class="text-xs text-slate-500">All course sessions placed with zero conflicts.</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="student.html" target="_blank" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all" title="Preview as student on mobile">
+              <i data-lucide="smartphone" class="w-3.5 h-3.5 text-blue-600"></i>
+              <span class="hidden sm:inline">Student View</span>
+            </a>
+            <button id="btn-publish-cloud-dash" class="px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all" title="Publish timetable live to students via Cloud">
+              <i data-lucide="cloud-upload" class="w-3.5 h-3.5 text-amber-300"></i>
+              <span class="hidden sm:inline">Publish to Cloud</span>
+              <span class="sm:hidden">Publish</span>
+            </button>
+            <button id="btn-view-generated-timetable" class="px-3.5 py-2 bg-wellspring-navy hover:bg-slate-900 text-amber-300 font-bold text-xs rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95">
+              <span>Open Timetable</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+            <button id="btn-delete-dashboard-timetable" class="p-2 sm:px-3 sm:py-2 text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all" title="Delete generated timetable">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span class="hidden sm:inline">Delete</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+            <div id="metric-label-1" class="text-[10px] font-bold text-slate-400 uppercase">Clashes</div>
+            <div id="metric-clashes" class="text-lg font-black text-emerald-700">0</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+            <div id="metric-label-2" class="text-[10px] font-bold text-slate-400 uppercase">Placed</div>
+            <div id="metric-completion" class="text-lg font-black text-blue-700">100%</div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+            <div id="metric-label-3" class="text-[10px] font-bold text-slate-400 uppercase">Hall Usage</div>
+            <div id="metric-utilization" class="text-lg font-black text-purple-700">0%</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 2: TIMETABLE VIEW ================= -->
+    <section id="tab-timetable" class="tab-pane hidden space-y-4">
+      
+      <!-- Controls & Filter Toolbar -->
+      <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 no-print">
+        
+        <!-- Top Row Controls -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+          
+          <!-- View Format Toggle: Timeline vs Grid -->
+          <div class="flex items-center bg-slate-100 p-1 rounded-xl self-start sm:self-auto">
+            <button id="btn-toggle-timeline" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-wellspring-navy shadow-sm transition-all flex items-center gap-1.5">
+              <i data-lucide="list" class="w-3.5 h-3.5"></i> Timeline Feed
+            </button>
+            <button id="btn-toggle-grid" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 transition-all flex items-center gap-1.5">
+              <i data-lucide="grid" class="w-3.5 h-3.5"></i> Full Matrix
+            </button>
+          </div>
+
+          <!-- Export & Action Buttons -->
+          <div class="flex items-center gap-2">
+            <button id="btn-publish-cloud" class="flex-1 sm:flex-initial px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white rounded-lg font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all" title="Publish timetable live to Wellspring Cloud">
+              <i data-lucide="cloud-upload" class="w-3.5 h-3.5 text-amber-300"></i>
+              <span id="btn-publish-cloud-text">Publish Cloud</span>
+            </button>
+            <button id="btn-export-excel" class="flex-1 sm:flex-initial px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg font-bold text-xs shadow-sm flex items-center justify-center gap-1.5">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Excel
+            </button>
+            <button id="btn-print-timetable" class="flex-1 sm:flex-initial px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs shadow-sm flex items-center justify-center gap-1.5">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print
+            </button>
+            <button id="btn-delete-timetable" class="flex-1 sm:flex-initial px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all" title="Delete current timetable">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              <span>Delete</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Filter Dropdowns Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-100 text-xs">
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Filter View Category:</label>
+            <select id="timetable-view-mode" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-semibold bg-slate-50">
+              <option value="college">By College / Faculty</option>
+              <option value="level">By Department & Level</option>
+              <option value="venue">By Lecture Hall / Venue</option>
+              <option value="lecturer">By Individual Lecturer</option>
+              <option value="master">University-Wide Master Matrix</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-bold text-slate-600 mb-1">Select Specific Entity:</label>
+            <select id="timetable-filter-select" class="w-full px-3 py-2 rounded-xl border border-slate-300 font-semibold bg-slate-50">
+              <option value="all">— All Items —</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Day Selector Pills (Crucial for mobile timeline!) -->
+        <div id="day-pills-bar" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-slate-100">
+          <button class="day-pill active" data-day="Monday">Monday</button>
+          <button class="day-pill" data-day="Tuesday">Tuesday</button>
+          <button class="day-pill" data-day="Wednesday">Wednesday</button>
+          <button class="day-pill" data-day="Thursday">Thursday</button>
+          <button class="day-pill" data-day="Friday">Friday</button>
+        </div>
+
+      </div>
+
+      <!-- Timetable Container -->
+      <div id="timetable-grid-container" class="space-y-4">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Print Signatures Footer -->
+      <div class="hidden print-footer">
+        <div>
+          <div class="font-bold text-slate-900">Dr. / Prof. _____________________________</div>
+          <div class="text-xs text-slate-600">Chairman, Timetable Committee</div>
+        </div>
+        <div class="text-center">
+          <div class="font-bold text-slate-900">Prof. _____________________________</div>
+          <div class="text-xs text-slate-600">Director of Academic Planning</div>
+        </div>
+        <div class="text-right">
+          <div class="font-bold text-slate-900">Official Stamp & Date:</div>
+          <div class="text-xs text-slate-600">Wellspring University, Benin City</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 3: COURSES ================= -->
+    <section id="tab-courses" class="tab-pane hidden space-y-4">
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Courses</h3>
+          <p class="text-[11px] sm:text-xs text-slate-500">Add course codes, credit units, lecturer, and venue requirement.</p>
+        </div>
+        <button id="btn-open-add-course" class="px-3.5 py-2 bg-wellspring-navy text-amber-300 font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add Course
+        </button>
+      </div>
+
+      <!-- Container: Cards on Mobile / Table on Desktop -->
+      <div id="courses-list-container" class="space-y-3">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ================= TAB 4: VENUES ================= -->
+    <section id="tab-venues" class="tab-pane hidden space-y-4">
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Lecture Halls</h3>
+          <p class="text-[11px] sm:text-xs text-slate-500">Available halls, laboratories, auditoriums, and their seating sizes.</p>
+        </div>
+        <button id="btn-open-add-venue" class="px-3.5 py-2 bg-wellspring-navy text-amber-300 font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add Venue
+        </button>
+      </div>
+
+      <div id="venues-list-container" class="space-y-3">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ================= TAB 5: LEVELS ================= -->
+    <section id="tab-levels" class="tab-pane hidden space-y-4">
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Academic Levels</h3>
+          <p class="text-[11px] sm:text-xs text-slate-500">Department cohorts (100L, 200L, etc.) with student headcounts.</p>
+        </div>
+        <button id="btn-open-add-level" class="px-3.5 py-2 bg-wellspring-navy text-amber-300 font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add Level
+        </button>
+      </div>
+
+      <div id="levels-list-container" class="space-y-3">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ================= TAB 6: LECTURERS ================= -->
+    <section id="tab-lecturers" class="tab-pane hidden space-y-4">
+      <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Lecturers & Invigilators</h3>
+          <p class="text-[11px] sm:text-xs text-slate-500">Academic staff separated by College (Science & Computing, CSMS, Life Sciences, PG).</p>
+        </div>
+        <button id="btn-open-add-lecturer" class="px-3.5 py-2 bg-wellspring-navy text-amber-300 font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add Lecturer
+        </button>
+      </div>
+
+      <!-- College Filter Pills for Lecturers -->
+      <div id="lecturers-college-filter-bar" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
+        <button class="lecturer-col-pill active px-3 py-1.5 rounded-xl font-bold bg-wellspring-navy text-amber-300 shadow-sm whitespace-nowrap" data-college="all">All Colleges</button>
+        <button class="lecturer-col-pill px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 whitespace-nowrap" data-college="col-sc">Science & Computing</button>
+        <button class="lecturer-col-pill px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 whitespace-nowrap" data-college="col-csms">CSMS</button>
+        <button class="lecturer-col-pill px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 whitespace-nowrap" data-college="col-life">Life Sciences</button>
+        <button class="lecturer-col-pill px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 whitespace-nowrap" data-college="col-pg">Postgraduate</button>
+        <button class="lecturer-col-pill px-3 py-1.5 rounded-xl font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 whitespace-nowrap" data-college="col-general">General Studies</button>
+      </div>
+
+      <div id="lecturers-list-container" class="space-y-3">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ================= TAB 7: SPECIAL RULES ================= -->
+    <section id="tab-rules" class="tab-pane hidden space-y-4 sm:space-y-6">
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900">University Rules & Constraints</h3>
+          <p class="text-xs text-slate-500">Configure institutional policies automatically enforced by the engine.</p>
+        </div>
+
+        <div class="space-y-3.5">
+          <!-- Chapel Service Rule -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+            <input type="checkbox" id="rule-enforce-chapel" class="mt-0.5 w-5 h-5 text-blue-600 rounded">
+            <div>
+              <label for="rule-enforce-chapel" class="font-bold text-slate-900 text-xs sm:text-sm cursor-pointer">Wednesday Chapel Service (12:00 PM – 1:00 PM)</label>
+              <p class="text-[11px] text-slate-500 mt-0.5">Strictly blocks all lecture halls and student cohorts on Wednesday 12:00 PM – 1:00 PM for university devotion.</p>
+            </div>
+          </div>
+
+          <!-- Lunch Break -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+            <input type="checkbox" id="rule-enforce-lunch" class="mt-0.5 w-5 h-5 text-blue-600 rounded">
+            <div>
+              <label for="rule-enforce-lunch" class="font-bold text-slate-900 text-xs sm:text-sm cursor-pointer">Daily Lunch / Break Period (12:00 PM – 1:00 PM on Mon, Tue, Thu, Fri)</label>
+              <p class="text-[11px] text-slate-500 mt-0.5">Strictly reserves 12:00 PM – 1:00 PM across Monday, Tuesday, Thursday, and Friday for student and staff lunch break.</p>
+            </div>
+          </div>
+
+          <!-- Late Friday Rule -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+            <input type="checkbox" id="rule-avoid-friday" class="mt-0.5 w-5 h-5 text-blue-600 rounded">
+            <div>
+              <label for="rule-avoid-friday" class="font-bold text-slate-900 text-xs sm:text-sm cursor-pointer">Avoid Late Friday Lectures (After 3:00 PM)</label>
+              <p class="text-[11px] text-slate-500 mt-0.5">Prioritizes Monday–Thursday and Friday mornings for student weekend travel.</p>
+            </div>
+          </div>
+
+          <!-- Max Daily Load -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+            <div>
+              <label class="font-bold text-slate-900 text-xs sm:text-sm">Max Lecture Hours / Day</label>
+              <p class="text-[11px] text-slate-500">Per student cohort per day</p>
+            </div>
+            <select id="rule-max-daily-hours" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+              <option value="4">4 Hours</option>
+              <option value="5">5 Hours</option>
+              <option value="6" selected>6 Hours</option>
+              <option value="7">7 Hours</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end">
+          <button id="btn-save-rules" class="w-full sm:w-auto px-5 py-2.5 bg-wellspring-navy text-amber-300 font-bold text-xs rounded-xl shadow-md">
+            Save Lecture Rules
+          </button>
+        </div>
+      </div>
+
+      <!-- Examination Rules & Malpractice Prevention -->
+      <div id="rules-exam-card" class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Examination Rules & Malpractice Prevention</h3>
+            <p class="text-xs text-slate-500">Spaced seating protocols, candidate fatigue rules, and invigilator rosters.</p>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">Exam Engine</span>
+        </div>
+
+        <div class="space-y-3.5">
+          <!-- 50% Desk Spacing Rule -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+            <input type="checkbox" id="rule-exam-spacing" class="mt-0.5 w-5 h-5 text-blue-600 rounded" checked>
+            <div>
+              <label for="rule-exam-spacing" class="font-bold text-slate-900 text-xs sm:text-sm cursor-pointer">50% Spaced Seating (Anti-Malpractice Protocol)</label>
+              <p class="text-[11px] text-slate-500 mt-0.5">Strictly reduces hall seating capacity by 50% so every candidate has an empty desk/chair separation on all sides.</p>
+            </div>
+          </div>
+
+          <!-- Max 1 Exam per Student Level per Day -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-start gap-3">
+            <input type="checkbox" id="rule-exam-max-daily" class="mt-0.5 w-5 h-5 text-blue-600 rounded" checked>
+            <div>
+              <label for="rule-exam-max-daily" class="font-bold text-slate-900 text-xs sm:text-sm cursor-pointer">Max 1 Exam per Student Level / Day</label>
+              <p class="text-[11px] text-slate-500 mt-0.5">Eliminates candidate fatigue by ensuring no cohort writes more than one exam paper on any single day.</p>
+            </div>
+          </div>
+
+          <!-- Exam Window Duration -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+            <div>
+              <label class="font-bold text-slate-900 text-xs sm:text-sm">Examination Window</label>
+              <p class="text-[11px] text-slate-500">Total duration of examination period</p>
+            </div>
+            <select id="rule-exam-duration" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+              <option value="2" selected>2 Weeks (10 Exam Days)</option>
+              <option value="3">3 Weeks (15 Exam Days)</option>
+              <option value="4">4 Weeks (20 Exam Days)</option>
+              <option value="5">5 Weeks (25 Exam Days)</option>
+            </select>
+          </div>
+
+          <!-- Invigilators per Hall -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+            <div>
+              <label class="font-bold text-slate-900 text-xs sm:text-sm">Invigilators per Exam Hall</label>
+              <p class="text-[11px] text-slate-500">Fair rotation from available lecturer pool</p>
+            </div>
+            <select id="rule-exam-invigilators" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+              <option value="1">1 Invigilator</option>
+              <option value="2" selected>2 Invigilators</option>
+              <option value="3">3 Invigilators</option>
+              <option value="4">4 Invigilators</option>
+              <option value="5">5 Invigilators</option>
+              <option value="6">6 Invigilators</option>
+              <option value="7">7 Invigilators</option>
+              <option value="8">8 Invigilators</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 flex justify-end">
+          <button id="btn-save-exam-rules" class="w-full sm:w-auto px-5 py-2.5 bg-wellspring-navy text-amber-300 font-bold text-xs rounded-xl shadow-md">
+            Save Exam Rules
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 8: SETTINGS ================= -->
+    <section id="tab-settings" class="tab-pane hidden space-y-4 sm:space-y-6">
+      
+      <!-- Academic Session & Institution Settings -->
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Calendar & Institution</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Customize the university name, campus, academic session, and semester.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Institution Name</label>
+            <input type="text" id="settings-institution" placeholder="e.g. Wellspring University" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Campus / Location</label>
+            <input type="text" id="settings-campus" placeholder="e.g. Main Campus, Benin City" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Academic Session</label>
+            <input type="text" id="settings-session" placeholder="e.g. 2025/2026 Academic Session" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Semester</label>
+            <select id="settings-semester" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold bg-white">
+              <option value="First Semester">First Semester</option>
+              <option value="Second Semester">Second Semester</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end">
+          <button id="btn-save-calendar" class="w-full sm:w-auto px-5 py-2.5 bg-wellspring-navy hover:bg-slate-900 text-amber-300 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span>Save Calendar & Institution</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Passcode Security -->
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Change Officer Passcode</h3>
+        <p class="text-xs text-slate-500">Protect this workstation from unauthorized timetable changes.</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md">
+          <input type="password" id="settings-current-passcode" placeholder="Current passcode" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono">
+          <input type="password" id="settings-new-passcode" placeholder="New passcode" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-mono">
+        </div>
+
+        <button id="btn-update-passcode" class="px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-xs">
+          Update Passcode
+        </button>
+      </div>
+
+      <!-- Google Cloud Firestore Sync Card -->
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <i data-lucide="cloud" class="w-5 h-5 text-emerald-600"></i>
+              Google Cloud Firestore Sync
+            </h3>
+            <p class="text-xs text-slate-500">Live multi-device database and instant student distribution.</p>
+          </div>
+          <span id="settings-cloud-pill" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Connected</span>
+          </span>
+        </div>
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1.5 font-medium text-slate-600">
+          <div class="flex items-center justify-between">
+            <span>Firebase Project:</span>
+            <code class="font-mono font-bold text-slate-800">wutimetablemaster</code>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Firestore Location:</span>
+            <span class="font-semibold text-slate-800">europe-west1 / Standard</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Student Live Sync:</span>
+            <span class="text-emerald-700 font-bold">Active (WebSockets / onSnapshot)</span>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 pt-1">
+          <button id="btn-cloud-push-catalog" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs shadow-sm flex items-center gap-1.5 active:scale-95 transition-all">
+            <i data-lucide="cloud-upload" class="w-4 h-4 text-amber-300"></i> Push Catalog to Cloud
+          </button>
+          <button id="btn-cloud-pull-catalog" class="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl font-bold text-xs shadow-sm flex items-center gap-1.5 active:scale-95 transition-all">
+            <i data-lucide="cloud-download" class="w-4 h-4 text-emerald-600"></i> Pull Catalog from Cloud
+          </button>
+        </div>
+      </div>
+
+      <!-- Backup, Restore, and Reset -->
+      <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Project Backup & Storage</h3>
+        <p class="text-xs text-slate-500">Save your complete timetable project as a standalone JSON file.</p>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button id="btn-export-json" class="px-4 py-2 bg-wellspring-navy text-amber-300 rounded-xl font-bold text-xs shadow-sm flex items-center gap-1.5">
+            <i data-lucide="download" class="w-4 h-4"></i> Backup (.json)
+          </button>
+          <button id="btn-import-json" class="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-xl font-bold text-xs hover:bg-slate-50 flex items-center gap-1.5">
+            <i data-lucide="upload" class="w-4 h-4"></i> Restore
+          </button>
+          <input type="file" id="file-import-json" accept=".json" class="hidden">
+          <button id="btn-clear-all" class="px-4 py-2 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl font-bold text-xs hover:bg-rose-100 flex items-center gap-1.5">
+            <i data-lucide="trash-2" class="w-4 h-4"></i> Clear All Data
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ================= SOLVER PROGRESS MODAL ================= -->
+  <div id="solver-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-8 max-w-sm w-full text-center">
+      <div class="w-14 h-14 rounded-2xl bg-wellspring-navy text-amber-300 flex items-center justify-center mx-auto mb-3 animate-spin">
+        <i data-lucide="loader-2" class="w-7 h-7"></i>
+      </div>
+      <h3 class="text-base sm:text-lg font-extrabold text-slate-900">Solving Timetable</h3>
+      <p id="solver-status-text" class="text-xs text-slate-500 mt-1 mb-5">Evaluating venues and schedules...</p>
+
+      <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-200">
+        <div id="solver-progress-bar" class="bg-gradient-to-r from-wellspring-navy to-amber-500 h-full transition-all duration-300" style="width: 15%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MANUAL INSPECTOR & MOVER MODAL ================= -->
+  <div id="session-inspector-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
+        <h4 class="font-extrabold text-slate-900 text-sm sm:text-base">Session Inspector</h4>
+        <button id="btn-close-inspector" class="text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="inspector-details">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="space-y-3 pt-2 border-t border-slate-100 text-xs">
+        <div class="font-bold text-slate-800">Reschedule Slot:</div>
+        
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Target Day</label>
+            <select id="move-target-day" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 bg-slate-50 font-medium">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Start Time</label>
+            <select id="move-target-slot" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 bg-slate-50 font-medium">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Lecture Hall</label>
+          <select id="move-target-venue" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 bg-slate-50 font-medium">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <div id="inspector-validation-alert" class="p-3 rounded-lg text-xs bg-slate-50 border border-slate-200 hidden">
+          <!-- Live clash checker feedback -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 mt-5 pt-3 border-t border-slate-200">
+        <button class="modal-cancel-btn px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs hover:bg-slate-50">
+          Cancel
+        </button>
+        <button id="btn-apply-move" class="px-4 py-2 bg-wellspring-navy text-amber-300 rounded-lg font-bold text-xs hover:bg-slate-900">
+          Apply Move
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADD COURSE MODAL ================= -->
+  <div id="modal-add-course" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
+        <h4 id="modal-course-title" class="font-extrabold text-slate-900 text-sm sm:text-base">Add New Course</h4>
+        <button class="modal-cancel-btn text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="edit-course-id" value="">
+      <div class="space-y-3.5 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Course Code</label>
+            <input type="text" id="new-course-code" placeholder="e.g. CMP 201" class="w-full px-3 py-2 rounded-lg border border-slate-300 uppercase font-mono font-bold">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Credit Units</label>
+            <select id="new-course-units" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold">
+              <option value="1">1 Unit</option>
+              <option value="2" selected>2 Units</option>
+              <option value="3">3 Units</option>
+              <option value="4">4 Units</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Course Title</label>
+          <input type="text" id="new-course-title" placeholder="e.g. Computer Programming I" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">College Affiliation</label>
+          <select id="new-course-college" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold bg-white">
+            <option value="auto" selected>Auto-assign from enrolled cohort(s)</option>
+            <option value="col-sc">Science and Computing (CSC)</option>
+            <option value="col-csms">Social & Management Sciences (CSMS)</option>
+            <option value="col-life">Basic Medical & Life Sciences</option>
+            <option value="col-pg">Postgraduate Studies</option>
+            <option value="col-general">General Studies / University-Wide</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Session Split</label>
+            <select id="new-course-format" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+              <option value="1x2h">One 2h Block</option>
+              <option value="2h+1h" selected>2h + 1h (Lab/Tut)</option>
+              <option value="1x3h">One 3h Block</option>
+              <option value="1h+1h">Two 1h Blocks</option>
+              <option value="1x1h">One 1h Block</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Venue Type</label>
+            <select id="new-course-venue-type" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+              <option value="classroom" selected>Standard Classroom</option>
+              <option value="lab">Computer/Science Lab</option>
+              <option value="theatre">Auditorium / Theatre</option>
+              <option value="studio">Media Studio</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Assigned Lecturer</label>
+          <select id="course-lecturer-select" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Enrolled Levels (Multi-Select)</label>
+          <div id="course-levels-checkboxes" class="grid grid-cols-1 sm:grid-cols-2 gap-1 p-2 border border-slate-200 rounded-lg max-h-32 overflow-y-auto bg-slate-50">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Color Tag</label>
+          <select id="new-course-color" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+            <option value="#3B82F6">Royal Blue</option>
+            <option value="#10B981">Emerald Green</option>
+            <option value="#8B5CF6">Purple</option>
+            <option value="#F59E0B">Amber Gold</option>
+            <option value="#EC4899">Pink</option>
+            <option value="#EF4444">Crimson Red</option>
+            <option value="#06B6D4">Cyan</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 mt-5 pt-3 border-t border-slate-200">
+        <button class="modal-cancel-btn px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs hover:bg-slate-50">Cancel</button>
+        <button id="btn-save-course" class="px-4 py-2 bg-wellspring-navy text-amber-300 rounded-lg font-bold text-xs hover:bg-slate-900">Save Course</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADD VENUE MODAL ================= -->
+  <div id="modal-add-venue" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 max-w-sm w-full">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
+        <h4 id="modal-venue-title" class="font-extrabold text-slate-900 text-sm sm:text-base">Add Lecture Hall</h4>
+        <button class="modal-cancel-btn text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="edit-venue-id" value="">
+      <div class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Venue Name</label>
+          <input type="text" id="new-venue-name" placeholder="e.g. Science Lecture Hall 1" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Hall Code</label>
+            <input type="text" id="new-venue-code" placeholder="e.g. SLH-1" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono font-bold">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Capacity</label>
+            <input type="number" id="new-venue-capacity" placeholder="80" value="80" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Facility Type</label>
+          <select id="new-venue-type" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+            <option value="classroom">Classroom</option>
+            <option value="theatre">Auditorium / Theatre</option>
+            <option value="lab">Computer / Science Lab</option>
+            <option value="studio">Media Studio</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Building Location</label>
+          <input type="text" id="new-venue-building" placeholder="e.g. Science Complex" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 mt-5 pt-3 border-t border-slate-200">
+        <button class="modal-cancel-btn px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs hover:bg-slate-50">Cancel</button>
+        <button id="btn-save-venue" class="px-4 py-2 bg-wellspring-navy text-amber-300 rounded-lg font-bold text-xs hover:bg-slate-900">Save Venue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADD LEVEL MODAL ================= -->
+  <div id="modal-add-level" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 max-w-sm w-full">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
+        <h4 id="modal-level-title" class="font-extrabold text-slate-900 text-sm sm:text-base">Add Academic Level</h4>
+        <button class="modal-cancel-btn text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="edit-level-id" value="">
+      <div class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Cohort Name</label>
+          <input type="text" id="new-level-name" placeholder="e.g. Computer Science 200L" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">College</label>
+          <select id="new-level-college" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold bg-white">
+            <option value="col-sc" selected>Science & Computing (CSC)</option>
+            <option value="col-csms">Social & Management Sciences (CSMS)</option>
+            <option value="col-life">Basic Medical & Life Sciences</option>
+            <option value="col-pg">Postgraduate Studies</option>
+            <option value="col-general">General Studies / University-Wide</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Short Code</label>
+            <input type="text" id="new-level-code" placeholder="e.g. CSC 200L" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-mono font-bold">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Class Size</label>
+            <input type="number" id="new-level-size" placeholder="45" value="45" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Department</label>
+          <input type="text" id="new-level-dept" placeholder="e.g. Computer Science" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 mt-5 pt-3 border-t border-slate-200">
+        <button class="modal-cancel-btn px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs hover:bg-slate-50">Cancel</button>
+        <button id="btn-save-level" class="px-4 py-2 bg-wellspring-navy text-amber-300 rounded-lg font-bold text-xs hover:bg-slate-900">Save Level</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= ADD LECTURER MODAL ================= -->
+  <div id="modal-add-lecturer" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-3 hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 p-5 max-w-sm w-full">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 mb-3">
+        <h4 id="modal-lecturer-title" class="font-extrabold text-slate-900 text-sm sm:text-base">Add Lecturer</h4>
+        <button class="modal-cancel-btn text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="edit-lecturer-id" value="">
+
+      <div class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Full Name & Title</label>
+          <input type="text" id="new-lecturer-name" placeholder="e.g. Dr. O. Adeleke" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">College Affiliation</label>
+          <select id="new-lecturer-college" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold bg-white">
+            <option value="col-sc" selected>Science & Computing (CSC)</option>
+            <option value="col-csms">Social & Management Sciences (CSMS)</option>
+            <option value="col-life">Basic Medical & Life Sciences</option>
+            <option value="col-pg">Postgraduate Studies</option>
+            <option value="col-general">General Studies / University-Wide</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Discipline / Specialization (Optional)</label>
+          <input type="text" id="new-lecturer-dept" placeholder="e.g. Cyber Security / Computer Science" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Max Daily Hrs</label>
+            <input type="number" id="new-lecturer-hours" value="4" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-semibold">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Unavailable Day</label>
+            <select id="new-lecturer-offday" class="w-full px-3 py-2 rounded-lg border border-slate-300 font-medium">
+              <option value="">Available All</option>
+              <option value="Monday">Mon Off</option>
+              <option value="Tuesday">Tue Off</option>
+              <option value="Wednesday">Wed Off</option>
+              <option value="Thursday">Thu Off</option>
+              <option value="Friday">Fri Off</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 mt-5 pt-3 border-t border-slate-200">
+        <button class="modal-cancel-btn px-4 py-2 border border-slate-300 rounded-lg text-slate-700 font-semibold text-xs hover:bg-slate-50">Cancel</button>
+        <button id="btn-save-lecturer" class="px-4 py-2 bg-wellspring-navy text-amber-300 rounded-lg font-bold text-xs hover:bg-slate-900">Save Lecturer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION ================= -->
+  <div id="notification-toast" class="fixed bottom-16 md:bottom-5 right-3 left-3 sm:left-auto sm:right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl text-white font-medium text-xs sm:text-sm transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none">
+    <div id="toast-icon"></div>
+    <span id="toast-message">Notification message</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script type="module" src="js/firebase-sync.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

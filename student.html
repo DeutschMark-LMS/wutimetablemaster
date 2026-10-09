@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Student Companion — Wellspring University</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wellspring: {
+              navy: '#0B1F3A',
+              navyDark: '#071527',
+              gold: '#CFA144',
+              goldLight: '#FAEAC4',
+              surface: '#F8FAFC'
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <style>
+    /* Smooth Pulse Animation for Live Indicator */
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.15); }
+    }
+    .live-pulse-dot {
+      animation: livePulse 1.8s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col text-slate-800 antialiased pb-12">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="glass-nav text-white sticky top-0 z-40">
+    <div class="max-w-2xl mx-auto px-4 py-3">
+      
+      <!-- Top Row: Branding & Switch Portal -->
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-xl bg-wellspring-gold text-wellspring-navyDark flex items-center justify-center font-black text-sm shadow-sm flex-shrink-0">
+            W
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-sm tracking-tight text-white truncate">Student Companion</span>
+              <span class="text-[9px] bg-amber-400/20 text-amber-300 px-1.5 py-0.2 rounded font-bold border border-amber-400/30">Wellspring</span>
+            </div>
+            <div class="text-[10px] text-slate-300 truncate" id="student-session-label">
+              2025/2026 Academic Session • First Semester
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <div id="student-cloud-status" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" title="Connected to Google Cloud Firestore">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Live Cloud</span>
+          </div>
+          <a href="index.html" class="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 text-[11px] font-semibold flex items-center gap-1 transition-all active:scale-95" title="Open Officer Workstation">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-300"></i>
+            <span class="hidden sm:inline">Officer Portal</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Cohort Selector Ribbon -->
+      <div class="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between gap-2 text-xs">
+        <button id="btn-open-cohort-picker" class="flex-1 flex items-center justify-between gap-2 px-3 py-1.5 bg-slate-900/60 hover:bg-slate-900/90 border border-white/15 rounded-xl transition-all text-left">
+          <div class="flex items-center gap-2 min-w-0">
+            <i data-lucide="graduation-cap" class="w-4 h-4 text-amber-300 flex-shrink-0"></i>
+            <div class="min-w-0 truncate">
+              <span id="current-cohort-name" class="font-bold text-white text-xs truncate block">Select Your Cohort / Level</span>
+              <span id="current-cohort-dept" class="text-[10px] text-slate-400 truncate block">Tap to choose program & level</span>
+            </div>
+          </div>
+          <span class="text-[10px] text-amber-300 font-bold bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20 flex-shrink-0 flex items-center gap-1">
+            <span>Change</span>
+            <i data-lucide="chevron-down" class="w-3 h-3"></i>
+          </span>
+        </button>
+
+        <!-- Share & Export Buttons -->
+        <button id="btn-share-cohort" class="p-2 bg-slate-900/60 hover:bg-slate-900 border border-white/15 rounded-xl text-slate-300 hover:text-white transition-all active:scale-95 flex-shrink-0" title="Share your cohort schedule link">
+          <i data-lucide="share-2" class="w-4 h-4"></i>
+        </button>
+        <button id="btn-export-ical" class="p-2 bg-slate-900/60 hover:bg-slate-900 border border-white/15 rounded-xl text-amber-300 hover:text-amber-200 transition-all active:scale-95 flex-shrink-0" title="Add all classes to your phone calendar (.ics)">
+          <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT WRAPPER ================= -->
+  <main class="max-w-2xl mx-auto px-4 py-4 w-full space-y-4 flex-1">
+
+    <!-- Mode Selector: Lectures vs Exams -->
+    <div class="bg-white p-1 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-2 text-xs font-bold text-center">
+      <button id="student-mode-lecture" class="py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all bg-wellspring-navy text-amber-300 shadow-sm">
+        <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+        <span>Classes & Lectures</span>
+      </button>
+      <button id="student-mode-exam" class="py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all text-slate-500 hover:text-slate-800">
+        <i data-lucide="file-check-2" class="w-3.5 h-3.5"></i>
+        <span>Examination Docket</span>
+      </button>
+    </div>
+
+    <!-- ================= REAL-TIME "LIVE NOW / UP NEXT" HERO CARD ================= -->
+    <section id="live-hero-card" class="bg-slate-900 text-white rounded-3xl p-4 sm:p-5 shadow-lg border border-amber-400/20 relative overflow-hidden">
+      <!-- Decorative background glow -->
+      <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-amber-400/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <!-- Top Header Row: Status Pill & Time -->
+      <div class="flex items-center justify-between gap-2 pb-3 border-b border-slate-800">
+        <div id="live-status-pill" class="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[11px] font-bold">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 live-pulse-dot"></span>
+          <span id="live-status-text">Checking Live Status...</span>
+        </div>
+        <div class="text-[11px] font-mono text-slate-400 font-semibold" id="live-clock">
+          --:--
+        </div>
+      </div>
+
+      <!-- Main Course & Class Details -->
+      <div class="py-3.5 space-y-1.5">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span id="live-course-code" class="text-xl sm:text-2xl font-black text-amber-300 font-mono tracking-tight">--</span>
+          <span id="live-units-badge" class="px-2 py-0.5 rounded bg-white/10 text-slate-200 text-[10px] font-bold">-- Units</span>
+        </div>
+        <h2 id="live-course-title" class="text-sm sm:text-base font-bold text-white leading-snug">
+          Select your level to load schedule
+        </h2>
+      </div>
+
+      <!-- Key Metadata Row: Venue, Lecturer, Time Slot -->
+      <div class="pt-3 border-t border-slate-800 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+        <div class="p-2 rounded-xl bg-white/5 border border-white/5">
+          <span class="text-[10px] text-slate-400 font-bold uppercase block">Venue</span>
+          <span id="live-venue-name" class="font-bold text-white truncate block mt-0.5">--</span>
+        </div>
+        <div class="p-2 rounded-xl bg-white/5 border border-white/5">
+          <span class="text-[10px] text-slate-400 font-bold uppercase block">Time Slot</span>
+          <span id="live-time-slot" class="font-bold text-amber-300 truncate block mt-0.5">--</span>
+        </div>
+        <div class="p-2 rounded-xl bg-white/5 border border-white/5 col-span-2 sm:col-span-1">
+          <span class="text-[10px] text-slate-400 font-bold uppercase block" id="live-person-label">Lecturer</span>
+          <span id="live-person-name" class="font-semibold text-slate-200 truncate block mt-0.5">--</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW 1: LECTURE TIMELINE VIEW ================= -->
+    <section id="view-lecture-content" class="space-y-3">
+      
+      <!-- Day Selector Pills (Monday to Friday) -->
+      <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+        <button class="student-day-pill flex-1 py-2 px-3 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 text-center shadow-sm" data-day="Monday">Mon</button>
+        <button class="student-day-pill flex-1 py-2 px-3 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 text-center shadow-sm" data-day="Tuesday">Tue</button>
+        <button class="student-day-pill flex-1 py-2 px-3 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 text-center shadow-sm" data-day="Wednesday">Wed</button>
+        <button class="student-day-pill flex-1 py-2 px-3 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 text-center shadow-sm" data-day="Thursday">Thu</button>
+        <button class="student-day-pill flex-1 py-2 px-3 rounded-xl font-bold text-xs bg-white text-slate-700 border border-slate-200 text-center shadow-sm" data-day="Friday">Fri</button>
+      </div>
+
+      <!-- Day Summary Header Banner -->
+      <div class="flex items-center justify-between text-xs px-1 text-slate-500">
+        <span id="day-summary-title" class="font-bold text-slate-700">Today's Lectures</span>
+        <span id="day-summary-count" class="font-semibold">0 classes</span>
+      </div>
+
+      <!-- Timeline Schedule Feed -->
+      <div id="student-schedule-feed" class="space-y-2.5">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ================= VIEW 2: EXAM DOCKET VIEW ================= -->
+    <section id="view-exam-content" class="space-y-3 hidden">
+      <div class="flex items-center justify-between text-xs px-1 text-slate-500">
+        <span class="font-bold text-slate-700">Official Examination Docket</span>
+        <span id="exam-summary-count" class="font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">0 Papers</span>
+      </div>
+
+      <!-- Exam Docket Feed -->
+      <div id="student-exam-feed" class="space-y-2.5">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ================= EMPTY / UNSELECTED STATE ================= -->
+    <section id="student-empty-state" class="hidden bg-white p-8 rounded-3xl border border-slate-200 text-center shadow-sm space-y-4">
+      <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+        <i data-lucide="graduation-cap" class="w-7 h-7"></i>
+      </div>
+      <div>
+        <h3 class="font-extrabold text-slate-900 text-base">Select Your Academic Cohort</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+          Choose your college, department, and academic level to get instant reminders for your classes and exam halls.
+        </p>
+      </div>
+      <button id="btn-empty-select-cohort" class="px-5 py-2.5 bg-wellspring-navy hover:bg-slate-900 text-amber-300 font-bold text-xs rounded-xl shadow-md transition-all active:scale-95">
+        Choose My Level Now
+      </button>
+    </section>
+
+  </main>
+
+  <!-- ================= COHORT PICKER MODAL ================= -->
+  <div id="modal-cohort-picker" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 hidden">
+    <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full max-h-[85vh] flex flex-col overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 class="font-extrabold text-slate-900 text-sm sm:text-base">Select Academic Cohort</h3>
+          <p class="text-[11px] text-slate-500 mt-0.5">Filter by college or choose your class level</p>
+        </div>
+        <button id="btn-close-cohort-modal" class="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- College Filter Pills -->
+      <div class="p-3 bg-slate-50 border-b border-slate-100 overflow-x-auto no-scrollbar flex items-center gap-1.5">
+        <button class="cohort-col-filter active px-2.5 py-1 rounded-lg text-xs font-bold bg-wellspring-navy text-amber-300" data-col="all">All Colleges</button>
+        <button class="cohort-col-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200" data-col="col-sc">Science & Comp</button>
+        <button class="cohort-col-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200" data-col="col-csms">CSMS</button>
+        <button class="cohort-col-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200" data-col="col-life">Life Sciences</button>
+        <button class="cohort-col-filter px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-slate-600 border border-slate-200" data-col="col-pg">Postgraduate</button>
+      </div>
+
+      <!-- Search Input -->
+      <div class="p-3 border-b border-slate-100">
+        <div class="relative">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+          <input type="text" id="cohort-search-input" placeholder="Search department or level (e.g. 200L, Cyber...)" class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 font-medium focus:bg-white focus:outline-none focus:border-wellspring-navy">
+        </div>
+      </div>
+
+      <!-- Cohorts List Container -->
+      <div id="cohort-modal-list" class="p-3 overflow-y-auto space-y-2 flex-1">
+        <!-- Rendered dynamically -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= NOTIFICATION TOAST ================= -->
+  <div id="student-toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl border border-amber-400/30 text-xs font-bold flex items-center gap-2 pointer-events-none opacity-0 transition-opacity duration-200">
+    <i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>
+    <span id="student-toast-msg">Notification</span>
+  </div>
+
+  <!-- Application Logic Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script type="module" src="js/firebase-sync.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/student.js"></script>
+</body>
+</html>
+
